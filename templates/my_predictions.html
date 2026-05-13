@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Mis Predicciones - {{ app_name }}{% endblock %}
+{% block content %}
+<div class="fade-in">
+  <div class="page-header">
+    <h1 class="page-title">📋 Mis Predicciones</h1>
+    <p class="page-subtitle">Resumen de tus apuestas y puntuación</p>
+  </div>
+
+  <div class="score-breakdown">
+    <div class="score-card total-score-card">
+      <div class="score-card-value">{{ scores.total }}</div>
+      <div class="score-card-label">TOTAL</div>
+    </div>
+    <div class="score-card">
+      <div class="score-card-value">{{ scores.group_matches.points }}</div>
+      <div class="score-card-label">Partidos Grupos</div>
+    </div>
+    <div class="score-card">
+      <div class="score-card-value">{{ scores.group_standings.points }}</div>
+      <div class="score-card-label">Clasificados</div>
+    </div>
+    <div class="score-card">
+      <div class="score-card-value">{{ scores.knockout.points }}</div>
+      <div class="score-card-label">Eliminatorias</div>
+    </div>
+    <div class="score-card">
+      <div class="score-card-value">{{ scores.finals.points }}</div>
+      <div class="score-card-label">Final</div>
+    </div>
+  </div>
+
+  <!-- Group Match Details -->
+  {% if scores.group_matches.details %}
+  <div class="card" style="margin-bottom:1.5rem">
+    <div class="card-header">
+      <h2 class="card-title">⚽ Partidos de Grupos</h2>
+      <span style="color:var(--accent-hover);font-weight:700">{{ scores.group_matches.points }} pts</span>
+    </div>
+    {% for detail in scores.group_matches.details %}
+    <div class="match-row">
+      <div class="match-teams" style="flex:1">{{ detail.match }}</div>
+      <div style="font-size:.8rem">
+        Pred: <strong>{{ detail.prediction }}</strong> |
+        Real: <strong>{{ detail.result }}</strong>
+      </div>
+      <div style="font-weight:700;width:40px;text-align:right;color:{% if detail.correct %}var(--success){% else %}var(--error){% endif %}">
+        {% if detail.correct %}✅{% else %}❌{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Final Prediction -->
+  {% if final_pred %}
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">🏆 Predicción Final</h2>
+      <span style="color:var(--accent-hover);font-weight:700">{{ scores.finals.points }} pts</span>
+    </div>
+    <div class="finals-grid" style="margin-top:.5rem">
+      <div style="text-align:center">
+        <div style="font-size:1.5rem">🏆</div>
+        <div style="font-weight:700">Campeón</div>
+        <div style="color:var(--gold);font-weight:800;font-size:1.2rem">
+          {{ teams.get(final_pred.champion_code, {}).flag_emoji if teams.get(final_pred.champion_code) else '' }}
+          {{ final_pred.champion_code or '—' }}
+        </div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:1.5rem">🥈</div>
+        <div style="font-weight:700">Subcampeón</div>
+        <div style="color:var(--silver);font-weight:800;font-size:1.2rem">{{ final_pred.runner_up_code or '—' }}</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:1.5rem">🥉</div>
+        <div style="font-weight:700">Tercero</div>
+        <div style="font-weight:800;font-size:1.2rem">{{ final_pred.third_code or '—' }}</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:1.5rem">4️⃣</div>
+        <div style="font-weight:700">Cuarto</div>
+        <div style="font-weight:800;font-size:1.2rem">{{ final_pred.fourth_code or '—' }}</div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

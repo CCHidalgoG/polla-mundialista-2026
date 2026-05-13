@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Predicciones Fase de Grupos - {{ app_name }}{% endblock %}
+{% block content %}
+<div class="fade-in">
+  <div class="page-header">
+    <h1 class="page-title">🏟️ Fase de Grupos</h1>
+    <p class="page-subtitle">1 punto por acierto de ganador/empate · 2 pts clasificado en orden, 1 pt en desorden</p>
+  </div>
+
+  {% if not predictions_open %}
+  <div class="deadline-banner closed-banner">
+    <span class="deadline-icon">🔒</span>
+    <div class="deadline-text">Las predicciones están <span class="deadline-date">CERRADAS</span></div>
+  </div>
+  {% endif %}
+
+  <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="groups-grid">
+      {% for group_letter in groups_data.keys()|sort %}
+      <div class="group-card">
+        <div class="group-card-header">
+          <span class="group-letter">Grupo {{ group_letter }}</span>
+          <div class="group-teams">
+            {% for team in teams_by_group[group_letter] %}
+            <span>{{ team.flag_emoji }} {{ team.code }}</span>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="group-card-body">
+          <!-- Match predictions -->
+          {% for match in groups_data[group_letter] %}
+          <div class="match-row">
+            <div class="match-info">{{ match.match_date }}<br>{{ match.venue }}</div>
+            <div class="match-teams">
+              <span>{{ match.team1.flag_emoji }} {{ match.team1_code }}</span>
+              <span class="match-vs">vs</span>
+              <span>{{ match.team2.flag_emoji }} {{ match.team2_code }}</span>
+            </div>
+            <div class="prediction-options">
+              {% set pred = existing_preds.get(match.id) %}
+              <div class="pred-option">
+                <input type="radio" name="match_{{ match.id }}" id="m{{ match.id }}_1" value="1" {% if pred == '1' %}checked{% endif %} {% if not predictions_open %}disabled{% endif %}>
+                <label for="m{{ match.id }}_1">{{ match.team1_code[:3] }}</label>
+              </div>
+              <div class="pred-option">
+                <input type="radio" name="match_{{ match.id }}" id="m{{ match.id }}_X" value="X" {% if pred == 'X' %}checked{% endif %} {% if not predictions_open %}disabled{% endif %}>
+                <label for="m{{ match.id }}_X">X</label>
+              </div>
+              <div class="pred-option">
+                <input type="radio" name="match_{{ match.id }}" id="m{{ match.id }}_2" value="2" {% if pred == '2' %}checked{% endif %} {% if not predictions_open %}disabled{% endif %}>
+                <label for="m{{ match.id }}_2">{{ match.team2_code[:3] }}</label>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+
+          <!-- Classification prediction -->
+          <div class="classification-section">
+            <div class="classification-title">📋 Clasificados</div>
+            {% set standing = existing_standings.get(group_letter, {}) %}
+            <div class="classification-row">
+              <span class="classification-label first">1°</span>
+              <select name="first_{{ group_letter }}" class="classification-select" {% if not predictions_open %}disabled{% endif %}>
+                <option value="">Seleccionar...</option>
+                {% for team in teams_by_group[group_letter] %}
+                <option value="{{ team.code }}" {% if standing.get('first') == team.code %}selected{% endif %}>
+                  {{ team.flag_emoji }} {{ team.code }} - {{ team.name }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="classification-row">
+              <span class="classification-label second">2°</span>
+              <select name="second_{{ group_letter }}" class="classification-select" {% if not predictions_open %}disabled{% endif %}>
+                <option value="">Seleccionar...</option>
+                {% for team in teams_by_group[group_letter] %}
+                <option value="{{ team.code }}" {% if standing.get('second') == team.code %}selected{% endif %}>
+                  {{ team.flag_emoji }} {{ team.code }} - {{ team.name }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    {% if predictions_open %}
+    <div style="text-align:center;margin-top:2rem">
+      <button type="submit" class="btn btn-primary" style="padding:.8rem 3rem;font-size:1rem">
+        💾 Guardar Predicciones de Grupos
+      </button>
+    </div>
+    {% endif %}
+  </form>
+</div>
+{% endblock %}

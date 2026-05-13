@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Admin - {{ app_name }}{% endblock %}
+{% block content %}
+<div class="fade-in">
+  <div class="page-header">
+    <h1 class="page-title">⚙️ Panel de Administración</h1>
+  </div>
+
+  <div class="admin-grid">
+    <div class="stat-card">
+      <div class="stat-value">{{ total_users }}</div>
+      <div class="stat-label">Jugadores</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">{{ paid_users }}/{{ total_users }}</div>
+      <div class="stat-label">Han pagado</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">{{ group_matches_with_result }}/{{ total_group_matches }}</div>
+      <div class="stat-label">Resultados Grupos</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">{{ knockout_with_result }}/{{ total_knockout }}</div>
+      <div class="stat-label">Resultados Eliminatoria</div>
+    </div>
+  </div>
+
+  <!-- Quick Links -->
+  <div class="admin-grid" style="margin-bottom:2rem">
+    <a href="{{ url_for('admin_results_groups') }}" class="admin-card" style="text-decoration:none;color:var(--text-primary)">
+      <div class="admin-card-title">🏟️ Resultados Fase de Grupos</div>
+      <p style="color:var(--text-secondary);font-size:.85rem">Ingresar resultados de partidos y clasificados</p>
+    </a>
+    <a href="{{ url_for('admin_results_knockout') }}" class="admin-card" style="text-decoration:none;color:var(--text-primary)">
+      <div class="admin-card-title">🏆 Resultados Eliminatorias</div>
+      <p style="color:var(--text-secondary);font-size:.85rem">Ingresar resultados de fase eliminatoria</p>
+    </a>
+    <a href="{{ url_for('admin_results_finals') }}" class="admin-card" style="text-decoration:none;color:var(--text-primary)">
+      <div class="admin-card-title">🥇 Resultados Finales</div>
+      <p style="color:var(--text-secondary);font-size:.85rem">Campeón, subcampeón, tercero y cuarto</p>
+    </a>
+  </div>
+
+  <!-- Settings -->
+  <div class="card" style="margin-bottom:2rem">
+    <div class="card-header"><h2 class="card-title">⚙️ Configuración</h2></div>
+    <form method="POST" action="{{ url_for('admin_settings') }}" style="display:flex;gap:1rem;flex-wrap:wrap;align-items:end">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="form-group" style="flex:1;min-width:200px;margin:0">
+        <label class="form-label">Fecha límite predicciones</label>
+        <input type="datetime-local" name="prediction_deadline" class="form-input" value="2026-06-09T23:59">
+      </div>
+      <div class="form-group" style="margin:0">
+        <label class="form-label">Registro abierto</label>
+        <select name="registration_open" class="form-select">
+          <option value="true">Sí</option>
+          <option value="false">No</option>
+        </select>
+      </div>
+      <div class="form-group" style="flex:1;min-width:150px;margin:0">
+        <label class="form-label">Valor apuesta (COP)</label>
+        <input type="number" name="bet_amount" class="form-input" value="250000">
+      </div>
+      <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+    </form>
+  </div>
+
+  <!-- Users Table -->
+  <div class="card">
+    <div class="card-header"><h2 class="card-title">👥 Usuarios ({{ users|length }})</h2></div>
+    <div style="overflow-x:auto">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Usuario</th><th>Email</th><th>Rol</th><th>Pagó</th><th>Registro</th><th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in users %}
+          <tr>
+            <td><strong>{{ user.username }}</strong></td>
+            <td style="color:var(--text-secondary)">{{ user.email }}</td>
+            <td>
+              {% if user.is_admin %}<span class="badge badge-info">Admin</span>
+              {% else %}<span class="badge badge-success">Jugador</span>{% endif %}
+            </td>
+            <td>
+              {% if user.has_paid %}<span class="badge badge-success">✅ Sí</span>
+              {% else %}<span class="badge badge-warning">❌ No</span>{% endif %}
+            </td>
+            <td style="color:var(--text-muted);font-size:.8rem">{{ user.created_at.strftime('%d/%m/%Y') if user.created_at else '—' }}</td>
+            <td>
+              <div style="display:flex;gap:.25rem">
+                <form method="POST" action="{{ url_for('toggle_paid', user_id=user.id) }}" style="display:inline">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button class="btn btn-sm {% if user.has_paid %}btn-danger{% else %}btn-success{% endif %}" type="submit">
+                    {% if user.has_paid %}Quitar pago{% else %}Marcar pagó{% endif %}
+                  </button>
+                </form>
+                {% if not user.is_admin and user.id != current_user.id %}
+                <form method="POST" action="{{ url_for('toggle_admin', user_id=user.id) }}" style="display:inline">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button class="btn btn-sm btn-primary" type="submit">Hacer Admin</button>
+                </form>
+                <form method="POST" action="{{ url_for('delete_user', user_id=user.id) }}" style="display:inline"
+                      onsubmit="return confirm('¿Eliminar a {{ user.username }}?')">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button class="btn btn-sm btn-danger" type="submit">Eliminar</button>
+                </form>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

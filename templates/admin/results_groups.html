@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Admin: Resultados Grupos - {{ app_name }}{% endblock %}
+{% block content %}
+<div class="fade-in">
+  <div class="page-header">
+    <h1 class="page-title">🏟️ Resultados Fase de Grupos</h1>
+    <p class="page-subtitle">Ingresa los resultados reales de cada partido</p>
+  </div>
+
+  <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="groups-grid">
+      {% for group_letter in groups_data.keys()|sort %}
+      <div class="group-card">
+        <div class="group-card-header">
+          <span class="group-letter">Grupo {{ group_letter }}</span>
+        </div>
+        <div class="group-card-body">
+          {% for match in groups_data[group_letter] %}
+          <div class="match-row">
+            <div class="match-teams" style="flex:1">
+              <span>{{ match.team1.flag_emoji }} {{ match.team1_code }}</span>
+              <span class="match-vs">vs</span>
+              <span>{{ match.team2.flag_emoji }} {{ match.team2_code }}</span>
+            </div>
+            <div class="prediction-options">
+              <div class="pred-option">
+                <input type="radio" name="result_{{ match.id }}" id="r{{ match.id }}_1" value="1" {% if match.result == '1' %}checked{% endif %}>
+                <label for="r{{ match.id }}_1">{{ match.team1_code[:3] }}</label>
+              </div>
+              <div class="pred-option">
+                <input type="radio" name="result_{{ match.id }}" id="r{{ match.id }}_X" value="X" {% if match.result == 'X' %}checked{% endif %}>
+                <label for="r{{ match.id }}_X">X</label>
+              </div>
+              <div class="pred-option">
+                <input type="radio" name="result_{{ match.id }}" id="r{{ match.id }}_2" value="2" {% if match.result == '2' %}checked{% endif %}>
+                <label for="r{{ match.id }}_2">{{ match.team2_code[:3] }}</label>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+          <!-- Clasificados reales -->
+          <div class="classification-section">
+            <div class="classification-title">📋 Clasificados Reales</div>
+            {% set sr = standing_results.get(group_letter, {}) %}
+            <div class="classification-row">
+              <span class="classification-label first">1°</span>
+              <select name="standing_first_{{ group_letter }}" class="classification-select">
+                <option value="">—</option>
+                {% for team in teams_by_group[group_letter] %}
+                <option value="{{ team.code }}" {% if sr.get('first') == team.code %}selected{% endif %}>{{ team.flag_emoji }} {{ team.code }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="classification-row">
+              <span class="classification-label second">2°</span>
+              <select name="standing_second_{{ group_letter }}" class="classification-select">
+                <option value="">—</option>
+                {% for team in teams_by_group[group_letter] %}
+                <option value="{{ team.code }}" {% if sr.get('second') == team.code %}selected{% endif %}>{{ team.flag_emoji }} {{ team.code }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <div style="text-align:center;margin-top:2rem">
+      <button type="submit" class="btn btn-primary" style="padding:.8rem 3rem;font-size:1rem">💾 Guardar Resultados</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

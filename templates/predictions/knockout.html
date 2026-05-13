@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Fase Eliminatoria - {{ app_name }}{% endblock %}
+{% block content %}
+<div class="fade-in">
+  <div class="page-header">
+    <h1 class="page-title">🏆 Fase Eliminatoria</h1>
+    <p class="page-subtitle">Predice los equipos y ganador de cada partido eliminatorio</p>
+  </div>
+
+  {% if not predictions_open %}
+  <div class="deadline-banner closed-banner">
+    <span class="deadline-icon">🔒</span>
+    <div class="deadline-text">Las predicciones están <span class="deadline-date">CERRADAS</span></div>
+  </div>
+  {% endif %}
+
+  <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {% for round_key in round_order %}
+    {% if round_key in rounds_data %}
+    <div class="knockout-round">
+      <div class="round-header">
+        {% if round_key == 'R32' %}⚔️{% elif round_key == 'R16' %}🎯{% elif round_key == 'QF' %}🔥{% elif round_key == 'SF' %}💫{% elif round_key == 'THIRD' %}🥉{% else %}👑{% endif %}
+        {{ round_names[round_key] }}
+        <span style="font-size:.8rem;color:var(--text-muted);font-weight:400;margin-left:auto">
+          {% if round_key == 'R32' %}4 pts orden / 2 desorden
+          {% elif round_key == 'R16' %}8 pts orden / 6 desorden
+          {% elif round_key == 'QF' %}12 pts orden / 10 desorden
+          {% else %}16 pts orden / 14 desorden{% endif %}
+        </span>
+      </div>
+      <div class="knockout-grid">
+        {% for match in rounds_data[round_key] %}
+        {% set pred = existing_preds.get(match.id, {}) %}
+        <div class="knockout-card">
+          <div class="knockout-label">{{ match.label }} — {{ match.match_date }} · {{ match.venue }}</div>
+          <div class="knockout-matchup">
+            <div style="display:flex;gap:.5rem;align-items:center">
+              <span style="font-size:.7rem;color:var(--text-muted);width:30px">{{ match.team1_source }}</span>
+              <select name="team1_{{ match.id }}" class="knockout-team-select" {% if not predictions_open %}disabled{% endif %}>
+                <option value="">Equipo 1...</option>
+                {% for team in teams %}
+                <option value="{{ team.code }}" {% if pred.get('team1') == team.code %}selected{% endif %}>{{ team.flag_emoji }} {{ team.code }} - {{ team.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div style="text-align:center;font-size:.75rem;color:var(--text-muted)">VS</div>
+            <div style="display:flex;gap:.5rem;align-items:center">
+              <span style="font-size:.7rem;color:var(--text-muted);width:30px">{{ match.team2_source }}</span>
+              <select name="team2_{{ match.id }}" class="knockout-team-select" {% if not predictions_open %}disabled{% endif %}>
+                <option value="">Equipo 2...</option>
+                {% for team in teams %}
+                <option value="{{ team.code }}" {% if pred.get('team2') == team.code %}selected{% endif %}>{{ team.flag_emoji }} {{ team.code }} - {{ team.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="knockout-winner">
+              <label style="font-size:.75rem;font-weight:700;color:var(--gold)">🏆 Ganador:</label>
+              <select name="winner_{{ match.id }}" class="knockout-team-select" style="border-color:var(--gold);margin-top:.25rem" {% if not predictions_open %}disabled{% endif %}>
+                <option value="">Seleccionar ganador...</option>
+                {% for team in teams %}
+                <option value="{{ team.code }}" {% if pred.get('winner') == team.code %}selected{% endif %}>{{ team.flag_emoji }} {{ team.code }} - {{ team.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+
+    {% if predictions_open %}
+    <div style="text-align:center;margin-top:2rem">
+      <button type="submit" class="btn btn-primary" style="padding:.8rem 3rem;font-size:1rem">
+        💾 Guardar Predicciones Eliminatorias
+      </button>
+    </div>
+    {% endif %}
+  </form>
+</div>
+{% endblock %}

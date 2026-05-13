@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Polla del Mundial de Fútbol USA/CAN/MEX 2026 - ¡44 años de tradición!">
+    <title>{% block title %}{{ app_name }}{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% if current_user.is_authenticated %}
+    <nav class="navbar" id="main-nav">
+        <div class="nav-container">
+            <a href="{{ url_for('dashboard') }}" class="nav-brand">
+                <span class="brand-icon">⚽</span>
+                <span class="brand-text">Polla 2026</span>
+            </a>
+            <button class="nav-toggle" id="nav-toggle" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </button>
+            <div class="nav-menu" id="nav-menu">
+                <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                    <span class="nav-icon">📊</span> Tabla
+                </a>
+                {% if not current_user.is_admin %}
+                <a href="{{ url_for('predictions_groups') }}" class="nav-link {% if request.endpoint == 'predictions_groups' %}active{% endif %}">
+                    <span class="nav-icon">🏟️</span> Grupos
+                </a>
+                <a href="{{ url_for('predictions_knockout') }}" class="nav-link {% if request.endpoint == 'predictions_knockout' %}active{% endif %}">
+                    <span class="nav-icon">🏆</span> Eliminatorias
+                </a>
+                <a href="{{ url_for('predictions_finals') }}" class="nav-link {% if request.endpoint == 'predictions_finals' %}active{% endif %}">
+                    <span class="nav-icon">🥇</span> Final
+                </a>
+                <a href="{{ url_for('my_predictions') }}" class="nav-link {% if request.endpoint == 'my_predictions' %}active{% endif %}">
+                    <span class="nav-icon">📋</span> Mis Apuestas
+                </a>
+                {% endif %}
+                {% if current_user.is_admin %}
+                <a href="{{ url_for('admin_panel') }}" class="nav-link {% if 'admin' in request.endpoint %}active{% endif %}">
+                    <span class="nav-icon">⚙️</span> Admin
+                </a>
+                {% endif %}
+                <div class="nav-user">
+                    <span class="user-badge {% if current_user.is_admin %}admin-badge{% endif %}">
+                        {{ current_user.username }}
+                        {% if current_user.is_admin %}<small>ADMIN</small>{% endif %}
+                    </span>
+                    <a href="{{ url_for('logout') }}" class="nav-link logout-link">Salir</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <main class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-container">
+            {% for category, message in messages %}
+            <div class="flash flash-{{ category }}" onclick="this.remove()">
+                <span class="flash-icon">
+                    {% if category == 'success' %}✅{% elif category == 'error' %}❌{% elif category == 'info' %}ℹ️{% else %}⚠️{% endif %}
+                </span>
+                {{ message }}
+                <button class="flash-close">&times;</button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    {% if current_user.is_authenticated %}
+    <footer class="footer">
+        <div class="footer-content">
+            <p>🏆 Polla del Mundial 2026 — 44 años de tradición (1982-2026) — 12ª edición</p>
+        </div>
+    </footer>
+    {% endif %}
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

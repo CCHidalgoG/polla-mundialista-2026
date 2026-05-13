@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Predicción Final - {{ app_name }}{% endblock %}
+{% block content %}
+<div class="fade-in">
+  <div class="page-header">
+    <h1 class="page-title">🥇 Predicción Final</h1>
+    <p class="page-subtitle">Campeón: 48 pts · Subcampeón: 38 pts · Tercero: 28 pts · Cuarto: 18 pts</p>
+  </div>
+
+  {% if not predictions_open %}
+  <div class="deadline-banner closed-banner">
+    <span class="deadline-icon">🔒</span>
+    <div class="deadline-text">Las predicciones están <span class="deadline-date">CERRADAS</span></div>
+  </div>
+  {% endif %}
+
+  <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="finals-grid">
+      <div class="final-card champion">
+        <div class="final-icon">🏆</div>
+        <div class="final-label">Campeón</div>
+        <div class="final-points">48 puntos</div>
+        <select name="champion" class="form-select" {% if not predictions_open %}disabled{% endif %}>
+          <option value="">Seleccionar...</option>
+          {% for team in teams %}
+          <option value="{{ team.code }}" {% if existing and existing.champion_code == team.code %}selected{% endif %}>
+            {{ team.flag_emoji }} {{ team.code }} - {{ team.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="final-card">
+        <div class="final-icon">🥈</div>
+        <div class="final-label">Subcampeón</div>
+        <div class="final-points">38 puntos</div>
+        <select name="runner_up" class="form-select" {% if not predictions_open %}disabled{% endif %}>
+          <option value="">Seleccionar...</option>
+          {% for team in teams %}
+          <option value="{{ team.code }}" {% if existing and existing.runner_up_code == team.code %}selected{% endif %}>
+            {{ team.flag_emoji }} {{ team.code }} - {{ team.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="final-card">
+        <div class="final-icon">🥉</div>
+        <div class="final-label">Tercer Lugar</div>
+        <div class="final-points">28 puntos</div>
+        <select name="third" class="form-select" {% if not predictions_open %}disabled{% endif %}>
+          <option value="">Seleccionar...</option>
+          {% for team in teams %}
+          <option value="{{ team.code }}" {% if existing and existing.third_code == team.code %}selected{% endif %}>
+            {{ team.flag_emoji }} {{ team.code }} - {{ team.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="final-card">
+        <div class="final-icon">4️⃣</div>
+        <div class="final-label">Cuarto Lugar</div>
+        <div class="final-points">18 puntos</div>
+        <select name="fourth" class="form-select" {% if not predictions_open %}disabled{% endif %}>
+          <option value="">Seleccionar...</option>
+          {% for team in teams %}
+          <option value="{{ team.code }}" {% if existing and existing.fourth_code == team.code %}selected{% endif %}>
+            {{ team.flag_emoji }} {{ team.code }} - {{ team.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    {% if predictions_open %}
+    <div style="text-align:center;margin-top:2rem">
+      <button type="submit" class="btn btn-primary" style="padding:.8rem 3rem;font-size:1rem">
+        💾 Guardar Predicción Final
+      </button>
+    </div>
+    {% endif %}
+  </form>
+</div>
+{% endblock %}

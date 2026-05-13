@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Admin: Resultados Finales - {{ app_name }}{% endblock %}
+{% block content %}
+<div class="fade-in">
+  <div class="page-header">
+    <h1 class="page-title">🥇 Resultados Finales</h1>
+  </div>
+  <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="finals-grid">
+      <div class="final-card champion">
+        <div class="final-icon">🏆</div>
+        <div class="final-label">Campeón</div>
+        <div class="final-points">48 puntos</div>
+        <select name="champion" class="form-select">
+          <option value="">—</option>
+          {% for team in teams %}
+          <option value="{{ team.code }}" {% if result and result.champion_code == team.code %}selected{% endif %}>{{ team.flag_emoji }} {{ team.code }} - {{ team.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="final-card">
+        <div class="final-icon">🥈</div>
+        <div class="final-label">Subcampeón</div>
+        <div class="final-points">38 puntos</div>
+        <select name="runner_up" class="form-select">
+          <option value="">—</option>
+          {% for team in teams %}
+          <option value="{{ team.code }}" {% if result and result.runner_up_code == team.code %}selected{% endif %}>{{ team.flag_emoji }} {{ team.code }} - {{ team.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="final-card">
+        <div class="final-icon">🥉</div>
+        <div class="final-label">Tercero</div>
+        <div class="final-points">28 puntos</div>
+        <select name="third" class="form-select">
+          <option value="">—</option>
+          {% for team in teams %}
+          <option value="{{ team.code }}" {% if result and result.third_code == team.code %}selected{% endif %}>{{ team.flag_emoji }} {{ team.code }} - {{ team.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="final-card">
+        <div class="final-icon">4️⃣</div>
+        <div class="final-label">Cuarto</div>
+        <div class="final-points">18 puntos</div>
+        <select name="fourth" class="form-select">
+          <option value="">—</option>
+          {% for team in teams %}
+          <option value="{{ team.code }}" {% if result and result.fourth_code == team.code %}selected{% endif %}>{{ team.flag_emoji }} {{ team.code }} - {{ team.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2rem">
+      <button type="submit" class="btn btn-primary" style="padding:.8rem 3rem;font-size:1rem">💾 Guardar</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

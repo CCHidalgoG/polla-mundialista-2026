@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Admin: Resultados Eliminatorias - {{ app_name }}{% endblock %}
+{% block content %}
+<div class="fade-in">
+  <div class="page-header">
+    <h1 class="page-title">🏆 Resultados Eliminatorias</h1>
+    <p class="page-subtitle">Ingresa equipos y ganadores de cada partido</p>
+  </div>
+  <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {% for round_key in round_order %}
+    {% if round_key in rounds_data %}
+    <div class="knockout-round">
+      <div class="round-header">{{ round_names[round_key] }}</div>
+      <div class="knockout-grid">
+        {% for match in rounds_data[round_key] %}
+        <div class="knockout-card">
+          <div class="knockout-label">{{ match.label }} — {{ match.match_date }} · {{ match.venue }}</div>
+          <div class="knockout-matchup">
+            <select name="team1_{{ match.id }}" class="knockout-team-select">
+              <option value="">Equipo 1...</option>
+              {% for team in teams %}
+              <option value="{{ team.code }}" {% if match.team1_code == team.code %}selected{% endif %}>{{ team.flag_emoji }} {{ team.code }}</option>
+              {% endfor %}
+            </select>
+            <div style="text-align:center;font-size:.75rem;color:var(--text-muted)">VS</div>
+            <select name="team2_{{ match.id }}" class="knockout-team-select">
+              <option value="">Equipo 2...</option>
+              {% for team in teams %}
+              <option value="{{ team.code }}" {% if match.team2_code == team.code %}selected{% endif %}>{{ team.flag_emoji }} {{ team.code }}</option>
+              {% endfor %}
+            </select>
+            <div class="knockout-winner">
+              <label style="font-size:.75rem;font-weight:700;color:var(--gold)">🏆 Ganador:</label>
+              <select name="winner_{{ match.id }}" class="knockout-team-select" style="border-color:var(--gold);margin-top:.25rem">
+                <option value="">—</option>
+                {% for team in teams %}
+                <option value="{{ team.code }}" {% if match.winner_code == team.code %}selected{% endif %}>{{ team.flag_emoji }} {{ team.code }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+    <div style="text-align:center;margin-top:2rem">
+      <button type="submit" class="btn btn-primary" style="padding:.8rem 3rem;font-size:1rem">💾 Guardar Resultados</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

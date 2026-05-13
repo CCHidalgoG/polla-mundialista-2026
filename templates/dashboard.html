@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - {{ app_name }}{% endblock %}
+{% block content %}
+<div class="fade-in">
+  <div class="page-header">
+    <h1 class="page-title">🏆 Tabla de Posiciones</h1>
+    <p class="page-subtitle">Polla del Mundial USA/CAN/MEX 2026 — {{ total_users }} participantes</p>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-value">{{ total_users }}</div>
+      <div class="stat-label">Participantes</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">${{ '{:,.0f}'.format(prize_pool) }}</div>
+      <div class="stat-label">Bolsa Total (COP)</div>
+    </div>
+    {% if not current_user.is_admin and user_scores %}
+    <div class="stat-card">
+      <div class="stat-value">{{ user_scores.total }}</div>
+      <div class="stat-label">Mis Puntos</div>
+    </div>
+    {% endif %}
+    {% if not current_user.is_admin %}
+    <div class="stat-card">
+      <div class="stat-value">{{ stats.group_matches.done }}/{{ stats.group_matches.total }}</div>
+      <div class="stat-label">Partidos predichos</div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width:{{ (stats.group_matches.done / stats.group_matches.total * 100) if stats.group_matches.total else 0 }}%"></div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if predictions_open and not current_user.is_admin %}
+  <div class="deadline-banner">
+    <span class="deadline-icon">⏰</span>
+    <div class="deadline-text">
+      Fecha límite para predicciones: <span class="deadline-date">9 de Junio, 2026</span>
+      — <a href="{{ url_for('predictions_groups') }}" style="color:var(--accent-hover)">¡Llena tus predicciones!</a>
+    </div>
+  </div>
+  {% elif not predictions_open and not current_user.is_admin %}
+  <div class="deadline-banner closed-banner">
+    <span class="deadline-icon">🔒</span>
+    <div class="deadline-text">
+      Las predicciones están <span class="deadline-date">CERRADAS</span>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Leaderboard -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">📊 Clasificación General</h2>
+    </div>
+    <div class="leaderboard">
+      <div class="lb-row lb-header">
+        <div>#</div>
+        <div>Jugador</div>
+        <div class="lb-pts">Grupos</div>
+        <div class="lb-pts">Clasif.</div>
+        <div class="lb-pts">Elimin.</div>
+        <div class="lb-pts">Final</div>
+        <div style="text-align:right">Total</div>
+      </div>
+      {% for entry in leaderboard %}
+      <div class="lb-row {% if entry.user_id == current_user.id %}style="background:var(--bg-card-hover)"{% endif %}">
+        <div class="lb-rank {% if entry.rank == 1 %}lb-rank-1{% elif entry.rank == 2 %}lb-rank-2{% elif entry.rank == 3 %}lb-rank-3{% endif %}">
+          {% if entry.rank == 1 %}🥇{% elif entry.rank == 2 %}🥈{% elif entry.rank == 3 %}🥉{% else %}{{ entry.rank }}{% endif %}
+        </div>
+        <div class="lb-name">
+          {{ entry.username }}
+          {% if not entry.has_paid %}<span class="badge badge-warning">Sin pagar</span>{% endif %}
+        </div>
+        <div class="lb-pts">{{ entry.group_matches }}</div>
+        <div class="lb-pts">{{ entry.group_standings }}</div>
+        <div class="lb-pts">{{ entry.knockout }}</div>
+        <div class="lb-pts">{{ entry.finals }}</div>
+        <div class="lb-total" style="text-align:right">{{ entry.total }} pts</div>
+      </div>
+      {% endfor %}
+      {% if not leaderboard %}
+      <div style="text-align:center;padding:2rem;color:var(--text-muted)">
+        Aún no hay participantes registrados.
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
