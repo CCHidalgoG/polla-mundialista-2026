@@ -2,6 +2,9 @@
 Polla del Mundial 2026 - Main Flask Application
 """
 import os
+from dotenv import load_dotenv
+load_dotenv()
+
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
