@@ -8,6 +8,10 @@ class Config:
     # Supabase/Heroku use "postgres://" but SQLAlchemy 1.4+ requires "postgresql://"
     if _db_url.startswith('postgres://'):
         _db_url = _db_url.replace('postgres://', 'postgresql://', 1)
+    # Add SSL for remote PostgreSQL (required by Supabase)
+    if 'postgresql' in _db_url and 'sslmode' not in _db_url:
+        separator = '&' if '?' in _db_url else '?'
+        _db_url += f'{separator}sslmode=require'
     SQLALCHEMY_DATABASE_URI = _db_url
     
     SQLALCHEMY_TRACK_MODIFICATIONS = False
