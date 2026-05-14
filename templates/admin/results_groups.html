@@ -42,6 +42,9 @@
           <!-- Clasificados reales -->
           <div class="classification-section">
             <div class="classification-title">📋 Clasificados Reales</div>
+            <div class="classification-hint" style="font-size:.7rem;color:var(--text-muted);margin-bottom:.5rem">
+              3° lugar: los 8 mejores terceros pasan a Dieciseisavos
+            </div>
             {% set sr = standing_results.get(group_letter, {}) %}
             <div class="classification-row">
               <span class="classification-label first">1°</span>
@@ -58,6 +61,15 @@
                 <option value="">—</option>
                 {% for team in teams_by_group[group_letter] %}
                 <option value="{{ team.code }}" {% if sr.get('second') == team.code %}selected{% endif %}>{{ team.flag_emoji }} {{ team.code }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="classification-row">
+              <span class="classification-label third" style="background:var(--bronze, #cd7f32);color:#fff">3°</span>
+              <select name="standing_third_{{ group_letter }}" class="classification-select">
+                <option value="">—</option>
+                {% for team in teams_by_group[group_letter] %}
+                <option value="{{ team.code }}" {% if sr.get('third') == team.code %}selected{% endif %}>{{ team.flag_emoji }} {{ team.code }}</option>
                 {% endfor %}
               </select>
             </div>

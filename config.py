@@ -30,3 +30,13 @@ class Config:
     PRIZE_FIRST = 0.80
     PRIZE_SECOND = 0.15
     PRIZE_THIRD = 0.05
+    
+    # Tournament format (FIFA 2026 - 48 teams)
+    TOTAL_TEAMS = 48
+    GROUPS_COUNT = 12            # Groups A-L
+    TEAMS_PER_GROUP = 4
+    QUALIFIED_TOP2 = 24          # 1st & 2nd from each group
+    BEST_THIRD_PLACES = 8        # Best 8 of 12 third-place teams
+    TOTAL_KNOCKOUT_TEAMS = 32    # 24 + 8
+    START_KNOCKOUT = 'R32'       # Dieciseisavos de final
+    TOTAL_MATCHES = 104          # 72 group + 32 knockout

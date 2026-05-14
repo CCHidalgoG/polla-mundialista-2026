@@ -4,7 +4,7 @@
 <div class="fade-in">
   <div class="page-header">
     <h1 class="page-title">🏟️ Fase de Grupos</h1>
-    <p class="page-subtitle">1 punto por acierto de ganador/empate · 2 pts clasificado en orden, 1 pt en desorden</p>
+    <p class="page-subtitle">1 pt por acierto de ganador/empate · 2 pts clasificado en orden, 1 pt en desorden · 1 pt por 3° correcto</p>
   </div>
 
   {% if not predictions_open %}
@@ -58,6 +58,9 @@
           <!-- Classification prediction -->
           <div class="classification-section">
             <div class="classification-title">📋 Clasificados</div>
+            <div class="classification-hint" style="font-size:.7rem;color:var(--text-muted);margin-bottom:.5rem">
+              1° y 2° clasifican · Los 8 mejores 3° también pasan a Dieciseisavos
+            </div>
             {% set standing = existing_standings.get(group_letter, {}) %}
             <div class="classification-row">
               <span class="classification-label first">1°</span>
@@ -76,6 +79,17 @@
                 <option value="">Seleccionar...</option>
                 {% for team in teams_by_group[group_letter] %}
                 <option value="{{ team.code }}" {% if standing.get('second') == team.code %}selected{% endif %}>
+                  {{ team.flag_emoji }} {{ team.code }} - {{ team.name }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="classification-row">
+              <span class="classification-label third" style="background:var(--bronze, #cd7f32);color:#fff">3°</span>
+              <select name="third_{{ group_letter }}" class="classification-select" {% if not predictions_open %}disabled{% endif %}>
+                <option value="">Seleccionar...</option>
+                {% for team in teams_by_group[group_letter] %}
+                <option value="{{ team.code }}" {% if standing.get('third') == team.code %}selected{% endif %}>
                   {{ team.flag_emoji }} {{ team.code }} - {{ team.name }}
                 </option>
                 {% endfor %}

@@ -236,11 +236,12 @@ def predictions_groups():
                     )
                     db.session.add(pred)
 
-        # Save group standing predictions
+        # Save group standing predictions (1st, 2nd, and 3rd place)
         groups = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
         for group in groups:
             first = request.form.get(f'first_{group}')
             second = request.form.get(f'second_{group}')
+            third = request.form.get(f'third_{group}')
             if first and second and first != second:
                 standing = GroupStandingPrediction.query.filter_by(
                     user_id=current_user.id, group_letter=group
@@ -248,12 +249,14 @@ def predictions_groups():
                 if standing:
                     standing.first_team_code = first
                     standing.second_team_code = second
+                    standing.third_team_code = third
                 else:
                     standing = GroupStandingPrediction(
                         user_id=current_user.id,
                         group_letter=group,
                         first_team_code=first,
-                        second_team_code=second
+                        second_team_code=second,
+                        third_team_code=third
                     )
                     db.session.add(standing)
 
@@ -271,7 +274,8 @@ def predictions_groups():
     for standing in GroupStandingPrediction.query.filter_by(user_id=current_user.id).all():
         existing_standings[standing.group_letter] = {
             'first': standing.first_team_code,
-            'second': standing.second_team_code
+            'second': standing.second_team_code,
+            'third': standing.third_team_code
         }
 
     # Organize matches by group
@@ -486,21 +490,24 @@ def admin_results_groups():
             if result in ('1', '2', 'X', ''):
                 match.result = result if result else None
 
-        # Save group standings
+        # Save group standings (1st, 2nd, and 3rd place)
         groups = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
         for group in groups:
             first = request.form.get(f'standing_first_{group}')
             second = request.form.get(f'standing_second_{group}')
+            third = request.form.get(f'standing_third_{group}')
             if first and second:
                 standing = GroupStandingResult.query.filter_by(group_letter=group).first()
                 if standing:
                     standing.first_team_code = first
                     standing.second_team_code = second
+                    standing.third_team_code = third
                 else:
                     standing = GroupStandingResult(
                         group_letter=group,
                         first_team_code=first,
-                        second_team_code=second
+                        second_team_code=second,
+                        third_team_code=third
                     )
                     db.session.add(standing)
 
@@ -522,7 +529,8 @@ def admin_results_groups():
     for sr in GroupStandingResult.query.all():
         standing_results[sr.group_letter] = {
             'first': sr.first_team_code,
-            'second': sr.second_team_code
+            'second': sr.second_team_code,
+            'third': sr.third_team_code
         }
 
     return render_template('admin/results_groups.html',

@@ -102,6 +102,7 @@ class GroupStandingPrediction(db.Model):
     group_letter = db.Column(db.String(1), nullable=False)
     first_team_code = db.Column(db.String(5), db.ForeignKey('teams.code'), nullable=False)
     second_team_code = db.Column(db.String(5), db.ForeignKey('teams.code'), nullable=False)
+    third_team_code = db.Column(db.String(5), db.ForeignKey('teams.code'), nullable=True)
 
     __table_args__ = (db.UniqueConstraint('user_id', 'group_letter'),)
 
@@ -114,6 +115,7 @@ class GroupStandingResult(db.Model):
     group_letter = db.Column(db.String(1), unique=True, nullable=False)
     first_team_code = db.Column(db.String(5), db.ForeignKey('teams.code'), nullable=False)
     second_team_code = db.Column(db.String(5), db.ForeignKey('teams.code'), nullable=False)
+    third_team_code = db.Column(db.String(5), db.ForeignKey('teams.code'), nullable=True)
 
 
 class KnockoutMatch(db.Model):

@@ -1,9 +1,10 @@
 """
 Scoring engine for the Polla del Mundial 2026.
 
-Scoring rules:
+Scoring rules (FIFA 2026 - 48 teams, 12 groups):
 - Group Stage matches: 1 pt for correct winner/draw prediction
-- Group Stage classification: 2 pts in order, 1 pt out of order
+- Group Stage classification (1st & 2nd): 2 pts in order, 1 pt out of order
+- Group Stage 3rd place: 1 pt for correct 3rd place (8 best 3rds qualify to R32)
 - Round of 32 (Dieciseisavos): 4 pts in order, 2 pts out of order
 - Round of 16 (Octavos): 8 pts in order, 6 pts out of order
 - Quarter Finals (Cuartos): 12 pts in order, 10 pts out of order
@@ -12,6 +13,13 @@ Scoring rules:
 - Runner-up: 38 pts
 - Third place: 28 pts
 - Fourth place: 18 pts
+
+Tournament format:
+- 48 teams in 12 groups (A-L), 4 teams per group
+- Top 2 per group qualify (24 teams)
+- Best 8 third-place teams qualify (8 teams)
+- 32 teams enter knockout stage starting at Round of 32 (Dieciseisavos)
+- Knockout: R32 → R16 → QF → SF → Third Place Match → Final
 """
 from models import (
     db, User, GroupMatch, GroupMatchPrediction,
@@ -19,6 +27,20 @@ from models import (
     KnockoutMatch, KnockoutPrediction,
     FinalPrediction, FinalResult
 )
+
+# ──────────────────────────────────────────────
+# TOURNAMENT PARAMETERS (FIFA 2026 format)
+# ──────────────────────────────────────────────
+TOTAL_TEAMS = 48
+GROUPS_COUNT = 12
+TEAMS_PER_GROUP = 4
+QUALIFIED_PER_GROUP_TOP2 = 2  # 1st and 2nd qualify directly
+BEST_THIRD_PLACES = 8         # 8 of 12 third-place teams also qualify
+TOTAL_KNOCKOUT_TEAMS = 32     # 24 (top 2) + 8 (best 3rd) = 32
+START_KNOCKOUT_AT = 'R32'     # Dieciseisavos de final
+TOTAL_GROUP_MATCHES = 72      # 6 matches per group × 12 groups
+TOTAL_KNOCKOUT_MATCHES = 32   # 16 + 8 + 4 + 2 + 1 + 1
+TOTAL_MATCHES = 104           # 72 + 32
 
 # Points per round for knockout stage
 KNOCKOUT_POINTS = {
@@ -36,6 +58,11 @@ FINAL_POINTS = {
     'third': 28,
     'fourth': 18,
 }
+
+# Group standing points
+GROUP_STANDING_IN_ORDER = 2    # Correct team in correct position (1st/2nd)
+GROUP_STANDING_OUT_OF_ORDER = 1  # Correct team in wrong position (1st/2nd)
+GROUP_THIRD_PLACE = 1          # Correct 3rd place prediction
 
 
 def calculate_group_match_points(user_id):
@@ -68,8 +95,11 @@ def calculate_group_match_points(user_id):
 def calculate_group_standing_points(user_id):
     """
     Calculate points from group classification predictions.
-    2 pts for correct team in correct position (in order).
-    1 pt for correct team in wrong position (out of order).
+    1st & 2nd place:
+      - 2 pts for correct team in correct position (in order).
+      - 1 pt for correct team in wrong position (out of order).
+    3rd place:
+      - 1 pt for correctly predicting the 3rd place team.
     """
     points = 0
     details = []
@@ -82,26 +112,38 @@ def calculate_group_standing_points(user_id):
             result_set = {result.first_team_code, result.second_team_code}
 
             group_points = 0
+
+            # 1st place check
             first_correct = pred.first_team_code == result.first_team_code
-            second_correct = pred.second_team_code == result.second_team_code
-
             if first_correct:
-                group_points += 2
+                group_points += GROUP_STANDING_IN_ORDER
             elif pred.first_team_code in result_set:
-                group_points += 1
+                group_points += GROUP_STANDING_OUT_OF_ORDER
 
+            # 2nd place check
+            second_correct = pred.second_team_code == result.second_team_code
             if second_correct:
-                group_points += 2
+                group_points += GROUP_STANDING_IN_ORDER
             elif pred.second_team_code in result_set:
-                group_points += 1
+                group_points += GROUP_STANDING_OUT_OF_ORDER
+
+            # 3rd place check (new for FIFA 2026 - 8 best 3rds qualify)
+            third_correct = False
+            if pred.third_team_code and result.third_team_code:
+                third_correct = pred.third_team_code == result.third_team_code
+                if third_correct:
+                    group_points += GROUP_THIRD_PLACE
 
             points += group_points
             details.append({
                 'group': pred.group_letter,
                 'predicted_1st': pred.first_team_code,
                 'predicted_2nd': pred.second_team_code,
+                'predicted_3rd': pred.third_team_code,
                 'actual_1st': result.first_team_code,
                 'actual_2nd': result.second_team_code,
+                'actual_3rd': result.third_team_code,
+                'third_correct': third_correct,
                 'points': group_points,
             })
 
