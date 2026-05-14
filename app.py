@@ -713,6 +713,24 @@ def init_db():
     """Initialize database and seed data."""
     with app.app_context():
         db.create_all()
+        
+        # Auto-migrate: add third_team_code if missing (FIFA 2026 format)
+        from sqlalchemy import text, inspect
+        inspector = inspect(db.engine)
+        
+        for table_name in ['group_standing_predictions', 'group_standing_results']:
+            columns = [col['name'] for col in inspector.get_columns(table_name)]
+            if 'third_team_code' not in columns:
+                try:
+                    db.session.execute(text(
+                        f'ALTER TABLE {table_name} ADD COLUMN third_team_code VARCHAR(5)'
+                    ))
+                    db.session.commit()
+                    print(f'✅ Migrated {table_name}: added third_team_code')
+                except Exception as e:
+                    db.session.rollback()
+                    print(f'⚠️ Migration {table_name}: {e}')
+        
         from seed_data import seed_all
         seed_all()
 
